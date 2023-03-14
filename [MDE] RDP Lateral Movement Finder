@@ -1,0 +1,26 @@
+// Lateral Movement Finder - Find anomalies within RDP sessions which could potentially be a lateral movement from a Threat Actor
+// This should ideally not result in a hit, so it's worth investigating when it does
+//
+// You will need to tune this to your environment in 3 different ways
+// 1. Whitelist specific processes which are false positives in your environment (common ones are Microsoft.Tri.Sensor.exe, UnicastScanner, AVGSvc.exe)
+// 2. Adjust the "EventCount", this is the minimum number of RDP sessions from a single endpoint in the past 30 days.
+// 3. Adjust the "Score". The higher the score, the bigger the anomaly. Setting it too low will result in more false positives, higher might miss true positives.
+//
+// When this query finds something, you should investigate why this computer was performing a lot more RDP sessions than what's normal. 
+// An extra red flag of course if this all target IP's are unique and not multiple connection to a single, but I've intentionally not limited it to this.
+// And no, this is not intended to be a silver bullet to catch everytyhing, but it's proven to be very useful and might serve as a catalyst for further ideas and detections.
+// 
+// ALMSEC 2023
+//
+let RDPinfo = materialize(
+DeviceNetworkEvents
+| where RemotePort == 3389
+| where ActionType == "ConnectionSuccess"
+| summarize EventCount=count() by LocalIP, DeviceName, bin(Timestamp,1d)
+| order by Timestamp
+| summarize EventCount=make_list(EventCount),TimeGenerated=make_list(Timestamp) by LocalIP, DeviceName
+| extend (anomalies, score, baseline)=series_decompose_anomalies(EventCount)
+| mv-expand TimeGenerated, EventCount, anomalies, score, baseline
+| where EventCount > 4
+| where score > 5);
+RDPinfo
