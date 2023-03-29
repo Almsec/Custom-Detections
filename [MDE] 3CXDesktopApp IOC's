@@ -2,7 +2,7 @@
 // They will most likely add IOC's to that list, so this query might eventually get outdated and you might want to look at their post for the latest IOC's.
 
 // As the program is communicating externally to C2 servers, run this query to see if you have any traffic in your environment towards that C2 infrastructure
-// If you get this on this query, it means you are compromised by this
+// If you get hits on this query, it's extremely likely that you are compromised
 DeviceNetworkEvents
 | where Timestamp > ago(30d)
 | where RemoteUrl has_any("msstorageazure.com", "akamaicontainer.com", "qwepoi123098.com", "dunamistrd.com", "msedgepackageinfo.com", "akamaitechcloudservices.com", "pbxcloudeservices.com", "officeaddons.com", "sourceslabs.com", "msstorageboxes.com", "pbxphonenetwork.com", "journalide.org", "pbxsources.com", "msstorageboxes.com", "officestoragebox.com", "glcloudservice.com", "akamaitechcloudservices.com", "sourceslabs.com", "msedgepackageinfo.com", "pbxcloudeservices.com", "pbxphonenetwork.com", "officeaddons.com", "azureonlinestorage.com", "visualstudiofactory.com", "msstorageazure.com", "akamaicontainer.com", "azureonlinecloud.com", "zacharryblogs.com", "azuredeploystore.com", "sbmsa.wiki", "journalide.org")
